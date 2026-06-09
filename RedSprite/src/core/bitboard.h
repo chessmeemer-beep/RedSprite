@@ -56,21 +56,21 @@ private:
     static Bitboard bishop_masks[SQUARE_NB];
     static Bitboard rook_masks[SQUARE_NB];
     
-    static U64 sliding_attack(const Bitboard& mask, Square sq, const Bitboard& occupied, int delta);
+    static uint64_t sliding_attack(const Bitboard& mask, Square sq, const Bitboard& occupied, int delta);
     
 public:
     static void init();
     
-    static constexpr Bitboard get_pawn_attacks(Color c, Square s) { return pawn_attacks[c][s]; }
-    static constexpr Bitboard get_knight_attacks(Square s) { return knight_attacks[s]; }
-    static constexpr Bitboard get_king_attacks(Square s) { return king_attacks[s]; }
-    static constexpr Bitboard get_bishop_attacks(Square s, Bitboard occupied) { 
+    static Bitboard get_pawn_attacks(Color c, Square s) { return pawn_attacks[c][s]; }
+    static Bitboard get_knight_attacks(Square s) { return knight_attacks[s]; }
+    static Bitboard get_king_attacks(Square s) { return king_attacks[s]; }
+    static Bitboard get_bishop_attacks(Square s, Bitboard occupied) { 
         return bishop_attacks[s][(occupied.value() & bishop_masks[s].value()) >> get_bishop_shift(s)]; 
     }
-    static constexpr Bitboard get_rook_attacks(Square s, Bitboard occupied) { 
+    static Bitboard get_rook_attacks(Square s, Bitboard occupied) { 
         return rook_attacks[s][(occupied.value() & rook_masks[s].value()) >> get_rook_shift(s)]; 
     }
-    static constexpr Bitboard get_queen_attacks(Square s, Bitboard occupied) {
+    static Bitboard get_queen_attacks(Square s, Bitboard occupied) {
         return get_bishop_attacks(s, occupied) | get_rook_attacks(s, occupied);
     }
     

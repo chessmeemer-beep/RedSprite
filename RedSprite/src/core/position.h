@@ -5,8 +5,37 @@
 #include "move.h"
 #include <array>
 #include <cstring>
+#include <string>
 
 namespace RedSprite {
+
+// Forward declare ZobristHash before Position
+class ZobristHash {
+private:
+    uint64_t key;
+    
+public:
+    static uint64_t piece_keys[PIECE_NB][SQUARE_NB];
+    static uint64_t ep_keys[SQUARE_NB];
+    static uint64_t castling_keys[16];
+    static uint64_t side_key;
+    
+    static void init();
+    
+    constexpr ZobristHash() : key(0) {}
+    constexpr uint64_t value() const { return key; }
+    
+    constexpr void xor_piece(Piece p, Square s) { key ^= piece_keys[p][s]; }
+    constexpr void xor_ep(Square s) { key ^= ep_keys[s]; }
+    constexpr void xor_castling(int rights) { key ^= castling_keys[rights]; }
+    constexpr void xor_side() { key ^= side_key; }
+    
+    constexpr ZobristHash operator^(uint64_t v) const { 
+        ZobristHash h; h.key = key ^ v; return h; 
+    }
+};
+
+constexpr Square SQUARE_NONE = static_cast<Square>(64);
 
 class Position {
 private:
@@ -85,32 +114,6 @@ public:
     
     // Is it a draw by insufficient material?
     bool is_insufficient_material() const;
-};
-
-// Zobrist hashing
-class ZobristHash {
-private:
-    uint64_t key;
-    
-public:
-    static uint64_t piece_keys[PIECE_NB][SQUARE_NB];
-    static uint64_t ep_keys[SQUARE_NB];
-    static uint64_t castling_keys[16];
-    static uint64_t side_key;
-    
-    static void init();
-    
-    constexpr ZobristHash() : key(0) {}
-    constexpr uint64_t value() const { return key; }
-    
-    constexpr void xor_piece(Piece p, Square s) { key ^= piece_keys[p][s]; }
-    constexpr void xor_ep(Square s) { key ^= ep_keys[s]; }
-    constexpr void xor_castling(int rights) { key ^= castling_keys[rights]; }
-    constexpr void xor_side() { key ^= side_key; }
-    
-    constexpr ZobristHash operator^(uint64_t v) const { 
-        ZobristHash h; h.key = key ^ v; return h; 
-    }
 };
 
 } // namespace RedSprite

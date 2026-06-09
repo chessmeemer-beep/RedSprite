@@ -58,7 +58,7 @@ private:
     void generate_king_moves(ScoredMove* moves, int& count, Bitboard targets, bool check_evasion);
     
 public:
-    explicit MoveGenerator(const Position* p) : pos(p), us(NO_PIECE), their_attacks(0) {}
+    explicit MoveGenerator(const Position* p) : pos(p), us(WHITE), their_attacks(0) {}
     
     // Generate all legal moves
     int generate_legal(ScoredMove* moves);
