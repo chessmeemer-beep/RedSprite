@@ -1,0 +1,46 @@
+# Build artifacts
+build/
+CMakeCache.txt
+cmake_install.cmake
+Makefile
+compile_commands.json
+*.o
+*.a
+*.so
+*.dll
+*.exe
+
+# Large data files (DO NOT COMMIT)
+data/*.bin
+data/*.pt
+data/*.raw
+data/*.pgn
+weights/
+*.bin
+*.pt
+*.pth
+*.onnx
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Logs
+logs/
+*.log
+
+# Python cache
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Temporary files
+tmp/
+temp/
