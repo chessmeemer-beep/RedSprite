@@ -47,16 +47,16 @@ Position::Position()
     : occupied(0), checkers(0), pinned(0), king_attacks(0),
       castling_rights(0), ep_square(SQUARE_NONE), side_to_move(WHITE),
       halfmove_clock(0), fullmove_number(1), in_check(false) {
-    memset(pieces.data(), 0, sizeof(pieces));
-    memset(side_pieces.data(), 0, sizeof(side_pieces));
-    memset(piece_types.data(), 0, sizeof(piece_types));
+    for (auto& p : pieces) p = Bitboard(0);
+    for (auto& p : side_pieces) p = Bitboard(0);
+    for (auto& p : piece_types) p = Bitboard(0);
 }
 
 bool Position::set_from_fen(const char* fen) {
     // Clear position
-    memset(pieces.data(), 0, sizeof(pieces));
-    memset(side_pieces.data(), 0, sizeof(side_pieces));
-    memset(piece_types.data(), 0, sizeof(piece_types));
+    for (auto& p : pieces) p = Bitboard(0);
+    for (auto& p : side_pieces) p = Bitboard(0);
+    for (auto& p : piece_types) p = Bitboard(0);
     occupied = Bitboard(0);
     zobrist_key = ZobristHash();
     
@@ -263,7 +263,7 @@ void Position::update_check_info() {
     Color them = static_cast<Color>(1 - side_to_move);
     
     // Find attackers
-    Bitboard attackers = 0;
+    Bitboard attackers(0);
     
     // Pawn attacks
     Bitboard pawn_attackers = AttackGenerator::get_pawn_attacks(them, ksq) & get_pieces(PAWN) & get_pieces(them);
@@ -305,13 +305,13 @@ void Position::update_check_info() {
     Bitboard our_pieces = get_pieces(side_to_move);
     
     // Check for pins along ranks/files
-    Bitboard rank_pinners = AttackGenerator::get_rook_attacks(ksq, 0) & rook_queen & get_pieces(them);
+    Bitboard rank_pinners = AttackGenerator::get_rook_attacks(ksq, Bitboard(0)) & rook_queen & get_pieces(them);
     while (!rank_pinners.empty()) {
         Square pinner_sq = rank_pinners.lsb();
         rank_pinners = rank_pinners.pop_lsb();
         
         Bitboard between = (Bitboard(pinner_sq) | Bitboard(ksq)).pop_lsb().pop_lsb();
-        between = between & ((Bitboard(pinner_sq) | Bitboard(ksq)) - 1);
+        between = between & ((Bitboard(pinner_sq) | Bitboard(ksq)) ^ Bitboard(1));
         
         if ((between & ~our_pieces).empty() && between.count() == 1) {
             pinned |= between;
@@ -319,13 +319,13 @@ void Position::update_check_info() {
     }
     
     // Check for pins along diagonals
-    Bitboard diag_pinners = AttackGenerator::get_bishop_attacks(ksq, 0) & bishop_queen & get_pieces(them);
+    Bitboard diag_pinners = AttackGenerator::get_bishop_attacks(ksq, Bitboard(0)) & bishop_queen & get_pieces(them);
     while (!diag_pinners.empty()) {
         Square pinner_sq = diag_pinners.lsb();
         diag_pinners = diag_pinners.pop_lsb();
         
         Bitboard between = (Bitboard(pinner_sq) | Bitboard(ksq)).pop_lsb().pop_lsb();
-        between = between & ((Bitboard(pinner_sq) | Bitboard(ksq)) - 1);
+        between = between & ((Bitboard(pinner_sq) | Bitboard(ksq)) ^ Bitboard(1));
         
         if ((between & ~our_pieces).empty() && between.count() == 1) {
             pinned |= between;
@@ -583,13 +583,13 @@ void Position::update_castling_rights(Move m) {
         if (side_to_move == WHITE) {
             if (castling_rights & 1) {
                 zobrist_key.xor_castling(castling_rights);
-                castling_rights &= ~static_cast<Square>(3);
+                castling_rights &= ~3;
                 zobrist_key.xor_castling(castling_rights);
             }
         } else {
             if (castling_rights & 4) {
                 zobrist_key.xor_castling(castling_rights);
-                castling_rights &= ~static_cast<Square>(12);
+                castling_rights &= ~12;
                 zobrist_key.xor_castling(castling_rights);
             }
         }
@@ -599,19 +599,19 @@ void Position::update_castling_rights(Move m) {
     if (type_of(moved) == ROOK) {
         if (from == SQ_A1) {
             zobrist_key.xor_castling(castling_rights);
-            castling_rights &= ~static_cast<Square>(2);
+            castling_rights &= ~2;
             zobrist_key.xor_castling(castling_rights);
         } else if (from == SQ_H1) {
             zobrist_key.xor_castling(castling_rights);
-            castling_rights &= ~static_cast<Square>(1);
+            castling_rights &= ~1;
             zobrist_key.xor_castling(castling_rights);
         } else if (from == SQ_A8) {
             zobrist_key.xor_castling(castling_rights);
-            castling_rights &= ~static_cast<Square>(8);
+            castling_rights &= ~8;
             zobrist_key.xor_castling(castling_rights);
         } else if (from == SQ_H8) {
             zobrist_key.xor_castling(castling_rights);
-            castling_rights &= ~static_cast<Square>(4);
+            castling_rights &= ~4;
             zobrist_key.xor_castling(castling_rights);
         }
     }
@@ -619,19 +619,19 @@ void Position::update_castling_rights(Move m) {
     // If rook is captured
     if (to == SQ_A1) {
         zobrist_key.xor_castling(castling_rights);
-        castling_rights &= ~static_cast<Square>(2);
+        castling_rights &= ~2;
         zobrist_key.xor_castling(castling_rights);
     } else if (to == SQ_H1) {
         zobrist_key.xor_castling(castling_rights);
-        castling_rights &= ~static_cast<Square>(1);
+        castling_rights &= ~1;
         zobrist_key.xor_castling(castling_rights);
     } else if (to == SQ_A8) {
         zobrist_key.xor_castling(castling_rights);
-        castling_rights &= ~static_cast<Square>(8);
+        castling_rights &= ~8;
         zobrist_key.xor_castling(castling_rights);
     } else if (to == SQ_H8) {
         zobrist_key.xor_castling(castling_rights);
-        castling_rights &= ~static_cast<Square>(4);
+        castling_rights &= ~4;
         zobrist_key.xor_castling(castling_rights);
     }
 }

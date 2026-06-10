@@ -1,6 +1,7 @@
 #pragma once
 
-#include "types.h"
+#include "../core/types.h"
+#include "../movegen/move.h"
 #include <cstdint>
 #include <vector>
 #include <memory>
