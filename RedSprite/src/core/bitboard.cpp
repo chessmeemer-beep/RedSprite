@@ -94,22 +94,22 @@ void AttackGenerator::init() {
         Bitboard rank_edge = Bitboard(0xFF00000000000000ULL | 0xFFULL); // Rank 1 and 8
         
         // Bishop mask
-        bishop_masks[s] = ~(edge | rank_edge) & (
+        bishop_masks[s] = Bitboard(
             sliding_attack(~edge, static_cast<Square>(s), Bitboard(0), 9) |
             sliding_attack(~edge, static_cast<Square>(s), Bitboard(0), 7) |
             sliding_attack(~edge, static_cast<Square>(s), Bitboard(0), -9) |
             sliding_attack(~edge, static_cast<Square>(s), Bitboard(0), -7)
-        );
-        
+        ) & (~(edge | rank_edge));
+
         // Rook mask
-        rook_masks[s] = ~(rank_edge) & (
+        rook_masks[s] = Bitboard(
             sliding_attack(rank_edge, static_cast<Square>(s), Bitboard(0), 8) |
             sliding_attack(rank_edge, static_cast<Square>(s), Bitboard(0), -8) |
-            sliding_attack(Bitboard(0x0101010101010101ULL << file_of(static_cast<Square>(s))), 
-                          static_cast<Square>(s), 0, 1) |
-            sliding_attack(Bitboard(0x8080808080808080ULL >> (7 - file_of(static_cast<Square>(s)))), 
-                          static_cast<Square>(s), 0, -1)
-        );
+            sliding_attack(Bitboard(0x0101010101010101ULL << file_of(static_cast<Square>(s))),
+                          static_cast<Square>(s), Bitboard(0), 1) |
+            sliding_attack(Bitboard(0x8080808080808080ULL >> (7 - file_of(static_cast<Square>(s)))),
+                          static_cast<Square>(s), Bitboard(0), -1)
+        ) & (~rank_edge);
         
         // Generate bishop attacks for all occupancy combinations
         int bishop_bits = bishop_masks[s].count();

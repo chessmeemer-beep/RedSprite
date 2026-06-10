@@ -1,3 +1,4 @@
+#include <chrono>
 #include "core/position.h"
 #include "movegen/move.h"
 #include <iostream>

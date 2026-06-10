@@ -4,7 +4,7 @@
 namespace RedSprite {
 
 Bitboard MoveGenerator::compute_attacks(Color c) const {
-    Bitboard attacks = 0;
+    Bitboard attacks(0);
     Bitboard our_pieces = pos->get_pieces(c);
     
     // Pawn attacks
@@ -302,7 +302,7 @@ void MoveGenerator::generate_king_moves(ScoredMove* moves, int& count, Bitboard 
     
     // Castling (only if not in check and not evasion)
     if (!check_evasion && !pos->is_in_check()) {
-        Square castling_rights = pos->get_castling_rights();
+        int castling_rights = pos->get_castling_rights();
         int rights = static_cast<int>(castling_rights);
         
         if (us == WHITE) {
@@ -366,20 +366,20 @@ int MoveGenerator::generate_legal(ScoredMove* moves) {
         bool was_promotion = (moves[i].move.type() == MOVE_PROMOTION);
         PieceType promo_type = moves[i].move.promotion_type();
         
-        pos->make_move(moves[i].move);
+        // Create a temporary copy to test the move
+        Position temp_pos = *pos;
+        temp_pos.make_move(moves[i].move);
         
         // Check if our king is attacked
         Square ksq = SQUARE_NONE;
         for (int s = SQ_A1; s <= SQ_H8; ++s) {
-            if (pos->piece_at(static_cast<Square>(s)) == (us == WHITE ? W_KING : B_KING)) {
+            if (temp_pos.piece_at(static_cast<Square>(s)) == (us == WHITE ? W_KING : B_KING)) {
                 ksq = static_cast<Square>(s);
                 break;
             }
         }
         
-        bool legal = (ksq != SQUARE_NONE) && !pos->is_attacked_by(ksq, them);
-        
-        pos->unmake_move(moves[i].move, captured, was_promotion, promo_type);
+        bool legal = (ksq != SQUARE_NONE) && !temp_pos.is_attacked_by(ksq, them);
         
         if (legal) {
             moves[legal_count++] = moves[i];
@@ -441,7 +441,7 @@ int MoveGenerator::generate_evasions(ScoredMove* moves) {
     generate_king_moves(moves, count, ~pos->get_pieces(us), true);
     
     // Find squares between checker and king
-    Bitboard blocks = 0;
+    Bitboard blocks(0);
     Square ksq = SQUARE_NONE;
     for (int s = SQ_A1; s <= SQ_H8; ++s) {
         if (pos->piece_at(static_cast<Square>(s)) == (us == WHITE ? W_KING : B_KING)) {
@@ -482,27 +482,28 @@ int MoveGenerator::generate_evasions(ScoredMove* moves) {
     return count;
 }
 
-bool MoveGenerator::is_legal(const Move& move) {
-    Piece captured = pos->piece_at(move.to_sq());
+bool MoveGenerator::is_legal(const Move& move) const {
+    // Create a temporary copy to test the move
+    Position temp_pos = *pos;
+    
+    Piece captured = temp_pos.piece_at(move.to_sq());
     bool was_promotion = (move.type() == MOVE_PROMOTION);
     PieceType promo_type = move.promotion_type();
     
-    pos->make_move(move);
+    temp_pos.make_move(move);
     
-    Color us = static_cast<Color>(1 - pos->get_side_to_move());
-    Color them = pos->get_side_to_move();
+    Color us = static_cast<Color>(1 - temp_pos.get_side_to_move());
+    Color them = temp_pos.get_side_to_move();
     
     Square ksq = SQUARE_NONE;
     for (int s = SQ_A1; s <= SQ_H8; ++s) {
-        if (pos->piece_at(static_cast<Square>(s)) == (us == WHITE ? W_KING : B_KING)) {
+        if (temp_pos.piece_at(static_cast<Square>(s)) == (us == WHITE ? W_KING : B_KING)) {
             ksq = static_cast<Square>(s);
             break;
         }
     }
     
-    bool legal = (ksq != SQUARE_NONE) && !pos->is_attacked_by(ksq, them);
-    
-    pos->unmake_move(move, captured, was_promotion, promo_type);
+    bool legal = (ksq != SQUARE_NONE) && !temp_pos.is_attacked_by(ksq, them);
     
     return legal;
 }

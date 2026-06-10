@@ -22,15 +22,15 @@ public:
     
     static void init();
     
-    constexpr ZobristHash() : key(0) {}
-    constexpr uint64_t value() const { return key; }
+    ZobristHash() : key(0) {}
+    uint64_t value() const { return key; }
+
+    void xor_piece(Piece p, Square s) { key ^= piece_keys[static_cast<int>(p)][static_cast<int>(s)]; }
+    void xor_ep(Square s) { key ^= ep_keys[static_cast<int>(s)]; }
+    void xor_castling(int rights) { key ^= castling_keys[rights]; }
+    void xor_side() { key ^= side_key; }
     
-    constexpr void xor_piece(Piece p, Square s) { key ^= piece_keys[p][s]; }
-    constexpr void xor_ep(Square s) { key ^= ep_keys[s]; }
-    constexpr void xor_castling(int rights) { key ^= castling_keys[rights]; }
-    constexpr void xor_side() { key ^= side_key; }
-    
-    constexpr ZobristHash operator^(uint64_t v) const { 
+    ZobristHash operator^(uint64_t v) const { 
         ZobristHash h; h.key = key ^ v; return h; 
     }
 };
@@ -49,7 +49,7 @@ private:
     Bitboard pinned;        // Pinned pieces
     Bitboard king_attacks;  // Squares attacked by king
     
-    Square castling_rights; // Bitmask of castling rights (KQkq)
+    int castling_rights; // Bitmask of castling rights (KQkq)
     Square ep_square;       // En passant square (SQUARE_NONE if none)
     
     Color side_to_move;
@@ -91,10 +91,10 @@ public:
     constexpr Square get_ep_square() const { return ep_square; }
     constexpr int get_halfmove_clock() const { return halfmove_clock; }
     constexpr int get_fullmove_number() const { return fullmove_number; }
-    constexpr Square get_castling_rights() const { return castling_rights; }
+    int get_castling_rights() const { return castling_rights; }
     
     constexpr bool is_in_check() const { return in_check; }
-    constexpr ZobristHash get_zobrist_key() const { return zobrist_key; }
+    ZobristHash get_zobrist_key() const { return zobrist_key; }
     
     // Check if square is attacked by color
     bool is_attacked_by(Square s, Color by) const;

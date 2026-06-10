@@ -73,7 +73,7 @@ public:
     int generate_evasions(ScoredMove* moves);
     
     // Check if a move is legal (for quick validation)
-    bool is_legal(const Move& move);
+    bool is_legal(const Move& move) const;
     
     // Compute attack bitboards
     Bitboard compute_attacks(Color c) const;
